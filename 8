@@ -1,0 +1,64 @@
+def unify(l, r, σ=None):
+if σ is None:
+σ = {}
+l, r = walk(l, σ), walk(r, σ)
+if l == r:
+return σ
+elif is_var(l) and l not in r:
+return extend(l, r, σ)
+elif is_var(r) and r not in l:
+return extend(r, l, σ)
+elif is_func(l) and is_func(r):
+if l.func != r.func or len(l.args) != len(r.args):
+return None
+for i in range(len(l.args)):
+new_σ = unify(l.args[i], r.args[i], σ)
+if new_σ is None:
+return None
+σ = new_σ
+return σ
+else:
+return None
+def is_var(x):
+return isinstance(x, str) and x.isalpha()
+def is_func(x):
+return isinstance(x, str) and x.isalpha()
+def walk(x, σ):
+if is_var(x) and x in σ:
+return walk(σ[x], σ)
+else:
+return x
+def extend(var, val, σ):
+if is_var(val) and val in σ:
+val = walk(val, σ)
+if is_var(var) and var in σ:
+var = walk(var, σ)
+if var == val:
+return σ
+return {**σ, var: val}
+def solve(equations):
+if len(equations) == 0:
+return None
+equation = equations[0]
+remaining_equations = equations[1:]
+if not is_var(equation.lhs) and not is_var(equation.rhs):
+return None
+result = unify(equation.lhs, equation.rhs)
+if result is None:
+return None
+return result
+# Testing the program
+from dataclasses import dataclass
+@dataclass
+class Equation:
+lhs: str
+rhs: str
+equations = [
+Equation("p(b(A)", "Z"),
+Equation("b(A)","Z")
+]
+solution = solve(equations)
+if solution is None:
+print("The equations are not unifiable.")
+else:
+print("The equations are unifiable with substitution:", solution)
